@@ -10,13 +10,18 @@
 #
 # Parameters:
 #
-#   $git_home   = '/var/git'
-#   $git_groups = [ 'git' ]
-#   $key        = ''
-#   $root_name  = 'Root account'
-#   $root_email = ''
-#   $skel_name  = 'Administrative account'
-#   $skel_email = ''
+#   $git_user       = $git::params::git_user,
+#   $git_home       = $git::params::git_home,
+#   $git_group      = $git::params::git_group,
+#   $git_alt_groups  = $git::params::git_alt_groups,
+#   $ssh_key        = $git::params::ssh_key,
+#   $root_name      = $git::params::root_name,
+#   $root_email     = $git::params::root_email,
+#   $skel_name      = $git::params::skel_name,
+#   $skel_email     = $git::params::skel_email,
+#   $root_home      = $git::params::root_home,
+#   $skel_home      = $git::params::skel_home,
+#   $git_version    = $git::params::git_version
 #
 # Actions:
 #
@@ -28,40 +33,48 @@
 #
 #   class { 'git':
 #     git_home   => '/var/git',
-#     git_groups => [ 'git' ],
+#     git_group  => 'git',
 #     key        => '<YOUR PUBLIC SSH KEY>',
 #     root_email => '<YOUR ROOT EMAIL ADDRESS>',
 #     skel_email => '<YOUR DEFAULT USER EMAIL ADDRESS>'
 #   }
 #
 # [Remember: No empty lines between comments and class definition]
-class git(
-  $git_home   = '/var/git',
-  $git_groups = [ 'git' ],
-  $key        = '',
-  $root_name  = 'Root account',
-  $root_email = '',
-  $skel_name  = 'Administrative account',
-  $skel_email = ''
-) {
+class git (
 
-  include git::params
+  $git_user       = $git::params::git_user,
+  $git_home       = $git::params::git_home,
+  $git_group      = $git::params::git_group,
+  $git_alt_groups = $git::params::git_alt_groups,
+  $ssh_key        = $git::params::ssh_key,
+  $root_name      = $git::params::root_name,
+  $root_email     = $git::params::root_email,
+  $skel_name      = $git::params::skel_name,
+  $skel_email     = $git::params::skel_email,
+  $git_version    = $git::params::git_version
+)
+inherits git::params {
+
+  include users::params
+
+  $root_home = $users::params::root_home
+  $skel_home = $users::params::skel_home
 
   #-----------------------------------------------------------------------------
   # Install
 
-  if ! $git::params::git_version {
+  if ! $git_version {
     fail('Git version must be defined')
   }
   package { 'git-core':
-    ensure => $git::params::git_version;
+    ensure => $git_version;
   }
 
   #-----------------------------------------------------------------------------
   # Configure
 
-  if $git::params::root_home {
-    file { "${git::params::root_home}/.gitconfig":
+  if $root_home {
+    file { "${root_home}/.gitconfig":
       owner   => 'root',
       group   => 'root',
       mode    => 640,
@@ -70,8 +83,8 @@ class git(
     }
   }
 
-  if $git::params::skel_home {
-    file { "${git::params::skel_home}/.gitconfig":
+  if $skel_home {
+    file { "${skel_home}/.gitconfig":
       owner   => 'root',
       group   => 'root',
       mode    => 644,
@@ -83,12 +96,14 @@ class git(
   #-----------------------------------------------------------------------------
   # Manage
 
-  if $git_home and $key {
-    users::user { 'git':
-      groups  => $git_groups,
-      home    => $git_home,
-      key     => $key,
-      require => Package['git-core'],
+  if $git_user and $git_home and $ssh_key {
+    users::add_user { 'git':
+      group      => 'git',
+      alt_groups => $git_alt_groups,
+      home       => $git_home,
+      ssh_key    => $ssh_key,
+      system     => true,
+      require    => Package['git-core'],
     }
   }
 }

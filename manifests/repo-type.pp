@@ -1,8 +1,10 @@
 
 define git::repo (
+
   $repo_name = $title,
   $git_home  = '/var/git'
 ) {
+
   #-----------------------------------------------------------------------------
 
   $repo_path = "${git_home}/${repo_name}"

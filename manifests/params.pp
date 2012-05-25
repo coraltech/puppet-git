@@ -3,8 +3,16 @@ class git::params {
 
   #-----------------------------------------------------------------------------
 
-  $root_home = '/root'
-  $skel_home = '/etc/skel'
+  $git_user       = true
+  $git_home       = '/var/git'
+  $git_group      = 'git'
+  $git_alt_groups = [ ]
+  $ssh_key        = ''
+
+  $root_name   = 'Root account'
+  $root_email  = ''
+  $skel_name   = 'Administrative account'
+  $skel_email  = ''
 
   case $::operatingsystem {
     debian: {}
