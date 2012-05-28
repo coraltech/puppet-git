@@ -1,8 +1,10 @@
 
 define git::add_repo (
 
-  $repo_path = $title,
+  $repo_name = $title,
   $git_home  = '',
+  $git_user  = 'git',
+  $git_group = 'git',
   $source    = '',
   $base      = false
 ) {
@@ -10,13 +12,16 @@ define git::add_repo (
   #-----------------------------------------------------------------------------
 
   if $git_home {
-    $repo_path = "${git_home}/${repo_path}"
+    $repo_path = "${git_home}/${repo_name}"
+  }
+  else {
+    $repo_path = $repo_name
   }
 
   file { $repo_path:
     ensure  => 'directory',
-    owner   => 'git',
-    group   => 'git',
+    owner   => $git_user,
+    group   => $git_group,
     mode    => 755,
     require => Package['git-core'],
   }
@@ -31,31 +36,30 @@ define git::add_repo (
   if $source {
     vcsrepo { $repo_path:
       ensure   => $ensure,
-      provider => git,
+      provider => 'git',
       source   => $source,
+      force    => true,
       require  => File[$repo_path],
     }
   }
   else {
     vcsrepo { $repo_path:
       ensure   => $ensure,
-      provider => git,
+      provider => 'git',
+      force    => true,
       require  => File[$repo_path],
     }
   }
 
   #-----------------------------------------------------------------------------
 
-  $post_update_path = $base ? {
-    true    => "$repo_path/hooks/post_update",
-    default => "$repo_path/.git/hooks/post_update",
-  }
-
-  file { $post_update_path:
-    owner => 'git',
-    group => 'git',
-    mode  => 755,
-    source  => "puppet:///modules/git/post_update",
-    require => Vcsrepo[$repo_path],
+  if $git_home and ! $base {
+    file { "$repo_path/.git/hooks/post-update":
+      owner => $git_user,
+      group => $git_group,
+      mode  => 755,
+      source  => "puppet:///modules/git/post-update",
+      require => Vcsrepo[$repo_path],
+    }
   }
 }

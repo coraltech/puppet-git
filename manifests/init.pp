@@ -58,33 +58,22 @@ inherits git::params {
   include users::params
 
   #-----------------------------------------------------------------------------
-  # Install
-
-  if ! $git_version {
-    fail('Git version must be defined')
-  }
-  package { 'git-core':
-    ensure => $git_version;
-  }
-
-  #-----------------------------------------------------------------------------
-  # Configure
+  # Install and configure
 
   stage { 'git-bootstrap': }
   Stage['git-bootstrap'] -> Stage['main']
 
-  class { 'git::files':
-    root_home => $users::params::root_home,
-    skel_home => $users::params::skel_home,
-    stage     => 'git-bootstrap',
+  class { 'git::bootstrap':
+    git_version => $git_version,
+    stage       => 'git-bootstrap'
   }
 
   #-----------------------------------------------------------------------------
   # Manage
 
   if $git_user and $git_home and $ssh_key {
-    users::add_user { 'git':
-      group      => 'git',
+    users::add_user { $git_user:
+      group      => $git_group,
       alt_groups => $git_alt_groups,
       home       => $git_home,
       ssh_key    => $ssh_key,
