@@ -67,7 +67,9 @@ update_wc() {
 	echo "Updating working copy" >&2
 	(cd $GIT_WORK_TREE
 	git-diff-index -R --name-status HEAD >&2
-	git-reset --hard HEAD)
+	git-reset --hard HEAD
+	git-submodule sync
+	git-submodule update --init --recursive)
 }
 
 if [ "$is_bare" = "false" ]
