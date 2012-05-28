@@ -13,7 +13,7 @@
 #   $git_user       = $git::params::git_user,
 #   $git_home       = $git::params::git_home,
 #   $git_group      = $git::params::git_group,
-#   $git_alt_groups  = $git::params::git_alt_groups,
+#   $git_alt_groups = $git::params::git_alt_groups,
 #   $ssh_key        = $git::params::ssh_key,
 #   $root_name      = $git::params::root_name,
 #   $root_email     = $git::params::root_email,
@@ -57,9 +57,6 @@ inherits git::params {
 
   include users::params
 
-  $root_home = $users::params::root_home
-  $skel_home = $users::params::skel_home
-
   #-----------------------------------------------------------------------------
   # Install
 
@@ -73,24 +70,13 @@ inherits git::params {
   #-----------------------------------------------------------------------------
   # Configure
 
-  if $root_home {
-    file { "${root_home}/.gitconfig":
-      owner   => 'root',
-      group   => 'root',
-      mode    => 640,
-      content => template('git/root.gitconfig.erb'),
-      require => Package['git-core'],
-    }
-  }
+  stage { 'git-bootstrap': }
+  Stage['git-bootstrap'] -> Stage['main']
 
-  if $skel_home {
-    file { "${skel_home}/.gitconfig":
-      owner   => 'root',
-      group   => 'root',
-      mode    => 644,
-      content => template('git/skel.gitconfig.erb'),
-      require => Package['git-core'],
-    }
+  class { 'git::files':
+    root_home => $users::params::root_home,
+    skel_home => $users::params::skel_home,
+    stage     => 'git-bootstrap',
   }
 
   #-----------------------------------------------------------------------------

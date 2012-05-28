@@ -1,5 +1,5 @@
 
-define git::repo (
+define git::add_repo (
 
   $repo_name = $title,
   $git_home  = '/var/git'
