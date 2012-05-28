@@ -1,13 +1,17 @@
 
 define git::add_repo (
 
-  $repo_name = $title,
-  $git_home  = '/var/git'
+  $repo_path = $title,
+  $git_home  = '',
+  $source    = '',
+  $base      = false
 ) {
 
   #-----------------------------------------------------------------------------
 
-  $repo_path = "${git_home}/${repo_name}"
+  if $git_home {
+    $repo_path = "${git_home}/${repo_path}"
+  }
 
   file { $repo_path:
     ensure  => 'directory',
@@ -19,19 +23,39 @@ define git::add_repo (
 
   #-----------------------------------------------------------------------------
 
-  exec { 'create-git-repo':
-    cwd => $repo_path,
-    user => 'git',
-    command => '/usr/bin/git init',
-    creates => "$repo_path/.git/HEAD",
-    require => File[$repo_path],
+  $ensure = $base ? {
+    true    => 'base',
+    default => 'present',
   }
 
-  file { "$repo_path/.git/hooks/post_update":
+  if $source {
+    vcsrepo { $repo_path:
+      ensure   => $ensure,
+      provider => git,
+      source   => $source,
+      require  => File[$repo_path],
+    }
+  }
+  else {
+    vcsrepo { $repo_path:
+      ensure   => $ensure,
+      provider => git,
+      require  => File[$repo_path],
+    }
+  }
+
+  #-----------------------------------------------------------------------------
+
+  $post_update_path = $base ? {
+    true    => "$repo_path/hooks/post_update",
+    default => "$repo_path/.git/hooks/post_update",
+  }
+
+  file { $post_update_path:
     owner => 'git',
     group => 'git',
     mode  => 755,
     source  => "puppet:///modules/git/post_update",
-    require => Exec['create-git-repo'],
+    require => Vcsrepo[$repo_path],
   }
 }
