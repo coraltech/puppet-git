@@ -3,9 +3,9 @@ class git::params {
 
   #-----------------------------------------------------------------------------
 
-  $git_user       = true
-  $git_home       = '/var/git'
+  $git_user       = 'git'
   $git_group      = 'git'
+  $git_home       = '/var/git'
   $git_alt_groups = [ ]
   $ssh_key        = ''
 
