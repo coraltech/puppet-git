@@ -1,20 +1,24 @@
 
 class git::bootstrap (
 
-  $git_version = $git::params::git_version,
-  $root_home   = $users::params::root_home,
-  $skel_home   = $users::params::skel_home
-)
-inherits git::params {
+  $version    = $git::params::version,
+  $root_home  = $users::params::root_home,
+  $root_name  = $users::params::root_name,
+  $root_email = $users::params::root_email,
+  $skel_home  = $users::params::skel_home,
+  $skel_name  = $users::params::skel_name,
+  $skel_email = $users::params::skel_email,
+
+) inherits git::params {
 
   #-----------------------------------------------------------------------------
   # Install
 
-  if ! $git_version {
+  if ! $version {
     fail('Git version must be defined')
   }
   package { 'git-core':
-    ensure => $git_version,
+    ensure => $version,
   }
 
   #-----------------------------------------------------------------------------

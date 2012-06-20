@@ -10,18 +10,17 @@
 #
 # Parameters:
 #
-#   $git_user       = $git::params::git_user,
-#   $git_home       = $git::params::git_home,
-#   $git_group      = $git::params::git_group,
-#   $git_alt_groups = $git::params::git_alt_groups,
-#   $ssh_key        = $git::params::ssh_key,
-#   $root_name      = $git::params::root_name,
-#   $root_email     = $git::params::root_email,
-#   $skel_name      = $git::params::skel_name,
-#   $skel_email     = $git::params::skel_email,
-#   $root_home      = $git::params::root_home,
-#   $skel_home      = $git::params::skel_home,
-#   $git_version    = $git::params::git_version
+#   $user       = $git::params::git_user,
+#   $group      = $git::params::git_group,
+#   $alt_groups = $git::params::git_alt_groups,
+#   $home       = $git::params::git_home,
+#   $ssh_key    = $git::params::ssh_key,
+#   $version    = $git::params::git_version,
+#   $root_name  = $users::params::root_name,
+#   $root_email = $users::params::root_email,
+#   $skel_name  = $users::params::skel_name,
+#   $skel_email = $users::params::skel_email,
+#
 #
 # Actions:
 #
@@ -32,8 +31,7 @@
 # Sample Usage:
 #
 #   class { 'git':
-#     git_home   => '/var/git',
-#     git_group  => 'git',
+#     home       => '/var/git',
 #     key        => '<YOUR PUBLIC SSH KEY>',
 #     root_email => '<YOUR ROOT EMAIL ADDRESS>',
 #     skel_email => '<YOUR DEFAULT USER EMAIL ADDRESS>'
@@ -42,20 +40,18 @@
 # [Remember: No empty lines between comments and class definition]
 class git (
 
-  $git_user       = $git::params::git_user,
-  $git_home       = $git::params::git_home,
-  $git_group      = $git::params::git_group,
-  $git_alt_groups = $git::params::git_alt_groups,
-  $ssh_key        = $git::params::ssh_key,
-  $root_name      = $git::params::root_name,
-  $root_email     = $git::params::root_email,
-  $skel_name      = $git::params::skel_name,
-  $skel_email     = $git::params::skel_email,
-  $git_version    = $git::params::git_version
-)
-inherits git::params {
+  $user       = $git::params::user,
+  $group      = $git::params::group,
+  $home       = $git::params::home,
+  $alt_groups = $git::params::alt_groups,
+  $ssh_key    = $git::params::ssh_key,
+  $version    = $git::params::version,
+  $root_name  = $users::params::root_name,
+  $root_email = $users::params::root_email,
+  $skel_name  = $users::params::skel_name,
+  $skel_email = $users::params::skel_email,
 
-  include users::params
+) inherits git::params {
 
   #-----------------------------------------------------------------------------
   # Install and configure
@@ -64,18 +60,22 @@ inherits git::params {
   Stage['git-bootstrap'] -> Stage['main']
 
   class { 'git::bootstrap':
-    git_version => $git_version,
-    stage       => 'git-bootstrap'
+    version    => $version,
+    root_name  => $root_name,
+    root_email => $root_email,
+    skel_name  => $skel_name,
+    skel_email => $skel_email,
+    stage      => 'git-bootstrap'
   }
 
   #-----------------------------------------------------------------------------
   # Manage
 
-  if $git_user and $git_home and $ssh_key {
-    users::add_user { $git_user:
-      group      => $git_group,
-      alt_groups => $git_alt_groups,
-      home       => $git_home,
+  if $user and $home and $ssh_key {
+    users::user { $user:
+      group      => $group,
+      alt_groups => $alt_groups,
+      home       => $home,
       ssh_key    => $ssh_key,
       system     => true,
       require    => Package['git-core'],
