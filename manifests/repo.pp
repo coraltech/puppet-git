@@ -1,16 +1,20 @@
 
 define git::repo (
 
-  $repo_name = $name,
-  $user      = $git::params::user,
-  $group     = $git::params::group,
-  $home      = undef,
-  $source    = undef,
-  $revision  = undef,
-  $base      = false,
-  $notify    = undef,
+  $repo_name            = $name,
+  $user                 = $git::params::user,
+  $group                = $git::params::group,
+  $home                 = undef,
+  $source               = undef,
+  $revision             = undef,
+  $base                 = false,
+  $push_commands        = [],
+  $post_update_template = $git::params::post_update_template,
+  $git_notify           = undef,
 
 ) {
+
+  include git
 
   #-----------------------------------------------------------------------------
 
@@ -18,16 +22,6 @@ define git::repo (
     undef   => $repo_name,
     default => "${home}/${repo_name}",
   }
-
-  file { $repo_path:
-    ensure  => 'directory',
-    owner   => $user,
-    group   => $group,
-    mode    => 755,
-    require => Package['git-core'],
-  }
-
-  #-----------------------------------------------------------------------------
 
   vcsrepo { $repo_path:
     ensure   => $base ? {
@@ -37,20 +31,38 @@ define git::repo (
     provider => 'git',
     source   => $source,
     force    => true,
-    require  => File[$repo_path],
     revision => $revision,
-    notify   => $notify,
+    require  => Class['git'],
+    notify   => $git_notify,
+  }
+
+  file { $repo_path:
+    ensure    => 'directory',
+    owner     => $user,
+    group     => $group,
+    recurse   => true,
+    subscribe => Vcsrepo[$repo_path],
   }
 
   #-----------------------------------------------------------------------------
 
   if $home and ! $base {
+    exec { "$repo_path receive.denyCurrentBranch":
+      cwd         => $repo_path,
+      path        => [ '/bin', '/usr/bin', '/usr/local/bin' ],
+      command     => "git config receive.denyCurrentBranch 'ignore'",
+      user        => $user,
+      group       => $group,
+      refreshonly => true,
+      subscribe   => File[$repo_path],
+    }
+
     file { "$repo_path/.git/hooks/post-update":
       owner     => $user,
       group     => $group,
       mode      => 755,
-      source    => "puppet:///modules/git/post-update",
-      subscribe => Vcsrepo[$repo_path],
+      content   => template($post_update_template),
+      subscribe => Exec["$repo_path receive.denyCurrentBranch"],
     }
   }
 }
