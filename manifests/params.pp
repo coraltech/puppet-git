@@ -3,13 +3,17 @@ class git::params {
 
   #-----------------------------------------------------------------------------
 
-  $ssh_key    = ''
+  $allowed_ssh_key      = ''
+  $allowed_ssh_key_type = 'rsa'
+  $password             = undef
 
-  $user       = 'git'
-  $group      = 'git'
-  $alt_groups = [ ]
+  $user                 = 'git'
+  $group                = 'git'
+  $alt_groups           = [ ]
 
-  $home       = '/var/git'
+  $home                 = '/var/git'
+
+  $post_update_template = 'git/post-update.erb'
 
   case $::operatingsystem {
     debian: {}
