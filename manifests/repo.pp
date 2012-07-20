@@ -4,12 +4,12 @@ define git::repo (
   $repo_name            = $name,
   $user                 = $git::params::user,
   $group                = $git::params::group,
-  $home                 = undef,
-  $source               = undef,
-  $revision             = undef,
-  $base                 = false,
-  $push_commands        = [],
-  $post_update_template = $git::params::post_update_template,
+  $home                 = $git::params::os_home,
+  $source               = $git::params::source,
+  $revision             = $git::params::revision,
+  $base                 = $git::params::base,
+  $push_commands        = $git::params::push_commands,
+  $post_update_template = $git::params::os_post_update_template,
   $git_notify           = undef,
 
 ) {
@@ -18,14 +18,19 @@ define git::repo (
 
   #-----------------------------------------------------------------------------
 
-  $repo_path = $home ? {
-    undef   => $repo_name,
+  File {
+    owner => $user,
+    group => $group,
+  }
+
+  $repo_dir = $home ? {
+    ''      => $repo_name,
     default => "${home}/${repo_name}",
   }
 
-  vcsrepo { $repo_path:
+  vcsrepo { $repo_dir:
     ensure   => $base ? {
-      true    => 'base',
+      'true'  => 'base',
       default => 'present',
     },
     provider => 'git',
@@ -36,33 +41,29 @@ define git::repo (
     notify   => $git_notify,
   }
 
-  file { $repo_path:
-    ensure    => 'directory',
-    owner     => $user,
-    group     => $group,
+  file { $repo_dir:
+    ensure    => directory,
     recurse   => true,
-    subscribe => Vcsrepo[$repo_path],
+    subscribe => Vcsrepo[$repo_dir],
   }
 
   #-----------------------------------------------------------------------------
 
-  if $home and ! $base {
-    exec { "$repo_path receive.denyCurrentBranch":
-      cwd         => $repo_path,
+  if $home and $base == 'false' {
+    exec { "${repo_dir}-receive-deny-current-branch":
+      cwd         => $repo_dir,
       path        => [ '/bin', '/usr/bin', '/usr/local/bin' ],
       command     => "git config receive.denyCurrentBranch 'ignore'",
       user        => $user,
-      group       => $group,
       refreshonly => true,
-      subscribe   => File[$repo_path],
+      subscribe   => File[$repo_dir],
     }
 
-    file { "$repo_path/.git/hooks/post-update":
-      owner     => $user,
-      group     => $group,
+    file { "${repo_dir}-post-update":
+      path      => "${repo_dir}/.git/hooks/post-update",
       mode      => 755,
       content   => template($post_update_template),
-      subscribe => Exec["$repo_path receive.denyCurrentBranch"],
+      subscribe => Exec["${repo_dir}-receive-deny-current-branch"],
     }
   }
 }

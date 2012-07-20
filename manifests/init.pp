@@ -2,26 +2,13 @@
 #
 #   This module manages Git components.
 #
-#   Adrian Webb <adrian.webb@coraltg.com>
+#   Adrian Webb <adrian.webb@coraltech.net>
 #   2012-05-22
 #
 #   Tested platforms:
 #    - Ubuntu 12.04
 #
-# Parameters:
-#
-#   $user       = $git::params::git_user,
-#   $group      = $git::params::git_group,
-#   $alt_groups = $git::params::git_alt_groups,
-#   $home       = $git::params::git_home,
-#   $ssh_key    = $git::params::ssh_key,
-#   $password   = $git::params::password,
-#   $version    = $git::params::git_version,
-#   $root_name  = $users::params::root_name,
-#   $root_email = $users::params::root_email,
-#   $skel_name  = $users::params::skel_name,
-#   $skel_email = $users::params::skel_email,
-#
+# Parameters: (see <example/params.json> for Hiera configurations)
 #
 # Actions:
 #
@@ -41,59 +28,59 @@
 # [Remember: No empty lines between comments and class definition]
 class git (
 
-  $user                 = $git::params::user,
-  $group                = $git::params::group,
-  $home                 = $git::params::home,
-  $alt_groups           = $git::params::alt_groups,
-  $allowed_ssh_key      = $git::params::allowed_ssh_key,
-  $allowed_ssh_key_type = $git::params::allowed_ssh_key_type,
-  $password             = $git::params::password,
-  $version              = $git::params::version,
-  $root_name            = $users::params::root_name,
-  $root_email           = $users::params::root_email,
-  $skel_name            = $users::params::skel_name,
-  $skel_email           = $users::params::skel_email,
+  $package                 = $git::params::os_git_package,
+  $ensure                  = $git::default::git_ensure,
+  $home                    = $git::params::os_home,
+  $allowed_ssh_key         = $git::default::allowed_ssh_key,
+  $allowed_ssh_key_type    = $git::default::allowed_ssh_key_type,
+  $password                = $git::default::password,
+  $user                    = $git::default::user,
+  $group                   = $git::default::group,
+  $alt_groups              = $git::default::alt_groups,
+  $root_name               = $git::params::root_name,
+  $root_email              = $git::params::root_email,
+  $root_home               = $git::params::os_root_home,
+  $skel_name               = $git::params::skel_name,
+  $skel_email              = $git::params::skel_email,
+  $skel_home               = $git::params::os_skel_home,
+  $root_gitconfig_template = $git::params::os_root_gitconfig_template,
+  $skel_gitconfig_template = $git::params::os_skel_gitconfig_template,
+  $post_update_template    = $git::params::os_post_update_template,
 
 ) inherits git::params {
 
-  $root_home            = $users::params::root_home
-  $skel_home            = $users::params::skel_home
-
   #-----------------------------------------------------------------------------
-  # Install
+  # Installation
 
-  if ! $version {
-    fail('Git version must be defined')
+  if ! ( $package and $ensure ) {
+    fail('Git package name and ensure value must be defined')
   }
-  package { 'git-core':
-    ensure => $version,
+  package { 'git':
+    name   => $package,
+    ensure => $ensure,
   }
 
   #-----------------------------------------------------------------------------
-  # Configure
+  # Configuration
 
   if $root_home {
-    file { "${root_home}/.gitconfig":
-      owner   => 'root',
-      group   => 'root',
-      mode    => 640,
-      content => template('git/root.gitconfig.erb'),
-      require => Package['git-core'],
+    file { 'root-gitconfig':
+      path    => "${root_home}/.gitconfig",
+      content => template($root_gitconfig_template),
+      require => Package['git'],
     }
   }
 
   if $skel_home {
-    file { "${skel_home}/.gitconfig":
-      owner   => 'root',
-      group   => 'root',
-      mode    => 644,
-      content => template('git/skel.gitconfig.erb'),
-      require => Package['git-core'],
+    file { 'skel-gitconfig':
+      path    => "${skel_home}/.gitconfig",
+      content => template($skel_gitconfig_template),
+      require => Package['git'],
     }
   }
 
   #-----------------------------------------------------------------------------
-  # Manage
+  # User
 
   if $user and $home {
     users::user { $user:
@@ -104,7 +91,7 @@ class git (
       allowed_ssh_key_type => $allowed_ssh_key_type,
       password             => $password,
       system               => true,
-      require              => Package['git-core'],
+      require              => Package['git'],
     }
   }
 }

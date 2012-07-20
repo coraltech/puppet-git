@@ -1,0 +1,17 @@
+{
+  "git_ensure" : "present",
+  "allowed_ssh_key" : "",
+  "allowed_ssh_key_type" : "rsa",
+  "password" : "",
+  "user" : "git",
+  "group" : "git",
+  "alt_groups" : [],
+  "root_name" : "Root",
+  "root_email" : "root@localhost",
+  "skel_name" : "User",
+  "skel_email" : "user@localhost",
+  "source" : "",
+  "revision" : "master",
+  "base" : "false",
+  "push_commands" : []
+}
