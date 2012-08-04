@@ -1,5 +1,10 @@
 
 class git::default {
+
+  include users
+
+  #-----------------------------------------------------------------------------
+
   $git_ensure           = 'present'
   $allowed_ssh_key      = ''
   $allowed_ssh_key_type = 'rsa'
