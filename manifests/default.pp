@@ -1,7 +1,7 @@
 
 class git::default {
 
-  include users
+  include users::params
 
   #-----------------------------------------------------------------------------
 
