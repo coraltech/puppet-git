@@ -29,14 +29,14 @@
 class git (
 
   $package                 = $git::params::os_git_package,
-  $ensure                  = $git::default::git_ensure,
+  $ensure                  = $git::params::git_ensure,
   $home                    = $git::params::os_home,
-  $allowed_ssh_key         = $git::default::allowed_ssh_key,
-  $allowed_ssh_key_type    = $git::default::allowed_ssh_key_type,
-  $password                = $git::default::password,
-  $user                    = $git::default::user,
-  $group                   = $git::default::group,
-  $alt_groups              = $git::default::alt_groups,
+  $allowed_ssh_key         = $git::params::allowed_ssh_key,
+  $allowed_ssh_key_type    = $git::params::allowed_ssh_key_type,
+  $password                = $git::params::password,
+  $user                    = $git::params::user,
+  $group                   = $git::params::group,
+  $alt_groups              = $git::params::alt_groups,
   $root_name               = $git::params::root_name,
   $root_email              = $git::params::root_email,
   $root_home               = $git::params::os_root_home,
@@ -90,8 +90,8 @@ class git (
       allowed_ssh_key      => $allowed_ssh_key,
       allowed_ssh_key_type => $allowed_ssh_key_type,
       password             => $password,
-      system               => true,
-      require              => Package['git'],
+      system               => 'true',
+      require              => [ Package['git'], File['skel-gitconfig'] ],
     }
   }
 }

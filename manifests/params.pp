@@ -3,6 +3,8 @@ class git::params {
 
   include git::default
 
+  include users::params
+
   #-----------------------------------------------------------------------------
   # General configurations
 
