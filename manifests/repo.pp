@@ -31,7 +31,7 @@ define git::repo (
   vcsrepo { $repo_dir:
     ensure   => $base ? {
       'true'  => 'base',
-      default => 'present',
+      default => 'latest',
     },
     provider => 'git',
     source   => $source,
