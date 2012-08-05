@@ -31,12 +31,21 @@ define git::repo (
   vcsrepo { $repo_dir:
     ensure   => $base ? {
       'true'  => 'base',
-      default => 'latest',
+      default => $source ? {
+        ''      => 'present',
+        default => 'latest',
+      },
     },
     provider => 'git',
-    source   => $source,
     force    => true,
-    revision => $revision,
+    source   => $source ? {
+      ''      => undef,
+      default => $source,
+    },
+    revision => $revision ? {
+      ''      => undef,
+      default => $revision,
+    },
     require  => Class['git'],
     notify   => $git_notify,
   }
