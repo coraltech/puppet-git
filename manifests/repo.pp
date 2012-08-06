@@ -14,19 +14,14 @@ define git::repo (
 
 ) {
 
+  $repo_dir             = $home ? {
+    ''                   => $repo_name,
+    default              => "${home}/${repo_name}",
+  }
+
   include git
 
   #-----------------------------------------------------------------------------
-
-  File {
-    owner => $user,
-    group => $group,
-  }
-
-  $repo_dir = $home ? {
-    ''      => $repo_name,
-    default => "${home}/${repo_name}",
-  }
 
   vcsrepo { $repo_dir:
     ensure   => $base ? {
@@ -37,6 +32,8 @@ define git::repo (
       },
     },
     provider => 'git',
+    owner    => $user,
+    group    => $group,
     force    => true,
     source   => $source ? {
       ''      => undef,
@@ -50,12 +47,6 @@ define git::repo (
     notify   => $git_notify,
   }
 
-  file { $repo_dir:
-    ensure    => directory,
-    recurse   => true,
-    subscribe => Vcsrepo[$repo_dir],
-  }
-
   #-----------------------------------------------------------------------------
 
   if $home and $base == 'false' {
@@ -65,14 +56,16 @@ define git::repo (
       command     => "git config receive.denyCurrentBranch 'ignore'",
       user        => $user,
       refreshonly => true,
-      subscribe   => File[$repo_dir],
+      subscribe   => Vcsrepo[$repo_dir],
     }
 
     file { "${repo_dir}-post-update":
       path      => "${repo_dir}/.git/hooks/post-update",
-      mode      => 755,
+      owner     => $user,
+      group     => $group,
+      mode      => '0755',
       content   => template($post_update_template),
-      subscribe => Exec["${repo_dir}-receive-deny-current-branch"],
+      subscribe => Vcsrepo[$repo_dir],
     }
   }
 }
