@@ -16,7 +16,7 @@
 #-------------------------------------------------------------------------------
 # Functions
 #
-function update_working_copy {
+function update_repository {
     ref=$1
         
     echo "Pushed to checked out branch $ref" >&2
@@ -54,20 +54,38 @@ function update_working_copy {
             git update-ref --no-deref HEAD HEAD@{1} 2>/dev/null
             
             cd $GIT_WORK_TREE
-            git stash save "dirty $desc before update to $new";
+            git stash save "Dirty $desc before update to $new";
             git symbolic-ref HEAD "$ref"
         )
     fi
 
-    echo "Updating working copy..." >&2
     ( 
         cd $GIT_WORK_TREE
         git diff-index -R --name-status HEAD >&2
+        
+        echo "Updating working copy..." >&2
         git reset --hard HEAD
        
+        echo "Updating submodules..." >&2
         git submodule sync
         git submodule update --init --recursive
+        
+        echo "Pushing to registered external repositories..." >&2
+        git remote | xargs -L 1 push_to_remote
     )
+}
+
+#---
+
+function push_to_remote {
+	remote=$1
+	
+	git config remote.${remote}.url | grep git@
+	
+	if [ $? -eq 0 ]
+	then
+		git push --tags --all ${remote}
+	fi	
 }
 
 #-------------------------------------------------------------------------------
@@ -106,11 +124,12 @@ then
 		if [ ! "$active_branch" -o "$ref" = "$active_branch" ]
 		then
 			( 
-                update_working_copy $ref
+                update_repository $ref
                 
-            <% push_commands.each do |command| -%>
+<% push_commands.each do |command| -%>
                 <%= command %>
-            <% end -%>)
+<% end -%>
+            )
 		fi
 	done
 fi
