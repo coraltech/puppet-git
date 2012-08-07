@@ -17,11 +17,13 @@
 # Functions
 #
 function update_repository {
+	cd $GIT_WORK_TREE
+	
     ref=$1
         
     echo "Pushed to checked out branch $ref" >&2
     
-    if (cd $GIT_WORK_TREE; git diff-files -q --exit-code >/dev/null)
+    if (git diff-files -q --exit-code >/dev/null)
     then
         wc_dirty=0
     else
@@ -53,14 +55,12 @@ function update_repository {
             trap 'echo trapped $$; git symbolic-ref HEAD "'"$ref"'"' 2 3 13 15 ERR EXIT
             git update-ref --no-deref HEAD HEAD@{1} 2>/dev/null
             
-            cd $GIT_WORK_TREE
             git stash save "Dirty $desc before update to $new";
             git symbolic-ref HEAD "$ref"
         )
     fi
 
     ( 
-        cd $GIT_WORK_TREE
         git diff-index -R --name-status HEAD >&2
         
         echo "Updating working copy..." >&2
@@ -69,23 +69,27 @@ function update_repository {
         echo "Updating submodules..." >&2
         git submodule sync
         git submodule update --init --recursive
-        
-        echo "Pushing to registered external repositories..." >&2
-        git remote | xargs -L 1 push_to_remote
     )
 }
 
 #---
 
-function push_to_remote {
-	remote=$1
+function push_repository {
+	cd $GIT_WORK_TREE
 	
-	git config remote.${remote}.url | grep git@
+	ORIG_IFS="${IFS}"
+    NIFS=$'\n'
 	
-	if [ $? -eq 0 ]
-	then
-		git push --tags --all ${remote}
-	fi	
+	for REMOTE in `git remote 2> /dev/null` ; do
+	   git config remote.${REMOTE}.url | grep git@
+    
+        if [ $? -eq 0 ]
+        then
+            git push --tags --all ${REMOTE}
+        fi  	
+    done
+    
+    IFS="${ORIG_IFS}"
 }
 
 #-------------------------------------------------------------------------------
@@ -126,9 +130,11 @@ then
 			( 
                 update_repository $ref
                 
-<% push_commands.each do |command| -%>
+<% post_update_commands.each do |command| -%>
                 <%= command %>
 <% end -%>
+                
+                push_repository
             )
 		fi
 	done

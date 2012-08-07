@@ -31,5 +31,5 @@ class git::default {
   $source               = ''
   $revision             = 'master'
   $base                 = 'false'
-  $push_commands        = []
+  $post_update_commands = []
 }

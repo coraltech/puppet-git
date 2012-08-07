@@ -8,7 +8,7 @@ define git::repo (
   $source               = $git::params::source,
   $revision             = $git::params::revision,
   $base                 = $git::params::base,
-  $push_commands        = $git::params::push_commands,
+  $post_update_commands = $git::params::post_update_commands,
   $post_update_template = $git::params::os_post_update_template,
   $git_notify           = undef,
 

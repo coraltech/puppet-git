@@ -23,7 +23,7 @@ class git::params {
     $source               = hiera('git_source', $git::default::source)
     $revision             = hiera('git_revision', $git::default::revision)
     $base                 = hiera('git_base', $git::default::base)
-    $push_commands        = hiera('git_push_commands', $git::default::push_commands)
+    $post_update_commands = hiera('git_post_update_commands', $git::default::post_update_commands)
   }
   else {
     $git_ensure           = $git::default::git_ensure
@@ -40,7 +40,7 @@ class git::params {
     $source               = $git::default::source
     $revision             = $git::default::revision
     $base                 = $git::default::base
-    $push_commands        = $git::default::push_commands
+    $post_update_commands = $git::default::post_update_commands
   }
 
   #-----------------------------------------------------------------------------

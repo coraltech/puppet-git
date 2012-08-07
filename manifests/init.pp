@@ -45,7 +45,6 @@ class git (
   $skel_home               = $git::params::os_skel_home,
   $root_gitconfig_template = $git::params::os_root_gitconfig_template,
   $skel_gitconfig_template = $git::params::os_skel_gitconfig_template,
-  $post_update_template    = $git::params::os_post_update_template,
 
 ) inherits git::params {
 
