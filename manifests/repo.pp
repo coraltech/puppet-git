@@ -23,6 +23,13 @@ define git::repo (
 
   #-----------------------------------------------------------------------------
 
+  if $source and $revision {
+    $revision_real = $revision
+  }
+  else {
+    $revision_real = undef
+  }
+
   vcsrepo { $repo_dir:
     ensure   => $base ? {
       'true'  => 'base',
@@ -39,10 +46,7 @@ define git::repo (
       ''      => undef,
       default => $source,
     },
-    revision => $revision ? {
-      ''      => undef,
-      default => $revision,
-    },
+    revision => $revision_real,
     require  => Class['git'],
     notify   => $git_notify,
   }
