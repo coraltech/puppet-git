@@ -28,23 +28,23 @@
 # [Remember: No empty lines between comments and class definition]
 class git (
 
-  $package                 = $git::params::os_git_package,
-  $ensure                  = $git::params::git_ensure,
-  $home                    = $git::params::os_home,
+  $package                 = $git::params::package,
+  $ensure                  = $git::params::ensure,
+  $home                    = $git::params::home,
   $allowed_ssh_key         = $git::params::allowed_ssh_key,
   $allowed_ssh_key_type    = $git::params::allowed_ssh_key_type,
   $password                = $git::params::password,
   $user                    = $git::params::user,
   $group                   = $git::params::group,
   $alt_groups              = $git::params::alt_groups,
-  $root_name               = $git::params::root_name,
-  $root_email              = $git::params::root_email,
-  $root_home               = $git::params::os_root_home,
-  $skel_name               = $git::params::skel_name,
-  $skel_email              = $git::params::skel_email,
-  $skel_home               = $git::params::os_skel_home,
-  $root_gitconfig_template = $git::params::os_root_gitconfig_template,
-  $skel_gitconfig_template = $git::params::os_skel_gitconfig_template,
+  $root_gitconfig_template = $git::params::root_gitconfig_template,
+  $root_name               = $users::params::root_name,
+  $root_email              = $users::params::root_email,
+  $root_home               = $users::params::root_home,
+  $skel_gitconfig_template = $git::params::skel_gitconfig_template,
+  $skel_name               = $users::params::skel_name,
+  $skel_email              = $users::params::skel_email,
+  $skel_home               = $users::params::skel_home,
 
 ) inherits git::params {
 

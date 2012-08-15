@@ -1,35 +1,32 @@
 
 class git::default {
 
-  include users::params
+  $ensure               = 'present'
 
-  #-----------------------------------------------------------------------------
-
-  $git_ensure           = 'present'
-  $allowed_ssh_key      = ''
-  $allowed_ssh_key_type = 'rsa'
-  $password             = ''
   $user                 = 'git'
   $group                = 'git'
   $alt_groups           = []
-  $root_name            = $users::params::root_name ? {
-    ''                   => 'Root',
-    default              => $users::params::root_name,
-  }
-  $root_email           = $users::params::root_email ? {
-    ''                   => "root@${::hostname}",
-    default              => $users::params::root_email,
-  }
-  $skel_name            = $users::params::skel_name ? {
-    ''                   => "User",
-    default              => $users::params::skel_name,
-  }
-  $skel_email           = $users::params::skel_email ? {
-    ''                   => "user@${::hostname}",
-    default              => $users::params::skel_email,
-  }
+
   $source               = ''
   $revision             = 'master'
+
   $base                 = 'false'
   $post_update_commands = []
+
+  #---
+
+  case $::operatingsystem {
+    debian, ubuntu: {
+      $package                 = 'git'
+      $home                    = '/var/git'
+
+      $root_gitconfig_template = 'git/root.gitconfig.erb'
+      $skel_gitconfig_template = 'git/skel.gitconfig.erb'
+
+      $post_update_template    = 'git/post-update.erb'
+    }
+    default: {
+      fail("The git module is not currently supported on ${::operatingsystem}")
+    }
+  }
 }
