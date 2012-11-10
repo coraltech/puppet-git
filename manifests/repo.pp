@@ -24,8 +24,6 @@ define git::repo (
     default              => "${repo_dir}/.git"
   }
 
-  $test_diff_cmd        = "diff ${repo_git_dir}/_NEW_REVISION ${repo_git_dir}/_LAST_REVISION"
-
   include git
 
   #--
@@ -63,28 +61,7 @@ define git::repo (
     },
     revision => $revision_real,
     require  => Class['git'],
-  }
-
-  #---
-
-  exec { "${repo_dir}-new-revision":
-    command     => "git rev-parse HEAD > ${repo_git_dir}/_NEW_REVISION",
-    returns     => [ 0, 128 ],
-    require     => Class['git'],
-    subscribe   => Vcsrepo[$repo_dir],
-  }
-
-  exec { "${repo_dir}-update-notify":
-    command => 'test true',
-    onlyif  => $test_diff_cmd,
-    notify  => $update_notify,
-    require => Exec["${repo_dir}-new-revision"],
-  }
-
-  exec { "${repo_dir}-last-revision":
-    command   => "git rev-parse HEAD > ${repo_git_dir}/_LAST_REVISION",
-    returns   => [ 0, 128 ],
-    subscribe => Exec["${repo_dir}-update-notify"],
+    notify   => $update_notify,
   }
 
   #-----------------------------------------------------------------------------
@@ -101,7 +78,7 @@ define git::repo (
     path      => "${repo_git_dir}/hooks/post-update",
     owner     => $user,
     group     => $group,
-    mode      => '0755',
+    mode      => 0755,
     content   => template($post_update_template),
     subscribe => Vcsrepo[$repo_dir],
   }
