@@ -38,12 +38,12 @@ class git (
   $group                   = $git::params::group,
   $alt_groups              = $git::params::alt_groups,
   $root_gitconfig_template = $git::params::root_gitconfig_template,
-  $root_name               = $users::params::root_name,
-  $root_email              = $users::params::root_email,
+  $root_name               = $git::params::root_name,
+  $root_email              = $git::params::root_email,
   $root_home               = $users::params::root_home,
   $skel_gitconfig_template = $git::params::skel_gitconfig_template,
-  $skel_name               = $users::params::skel_name,
-  $skel_email              = $users::params::skel_email,
+  $skel_name               = $git::params::skel_name,
+  $skel_email              = $git::params::skel_email,
   $skel_home               = $users::params::skel_home,
 
 ) inherits git::params {
