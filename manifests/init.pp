@@ -35,6 +35,7 @@ class git (
   $allowed_ssh_key_type    = $git::params::allowed_ssh_key_type,
   $password                = $git::params::password,
   $user                    = $git::params::user,
+  $gid                     = $git::params::gid,
   $group                   = $git::params::group,
   $alt_groups              = $git::params::alt_groups,
   $root_gitconfig_template = $git::params::root_gitconfig_template,
@@ -83,6 +84,7 @@ class git (
 
   if $user and $home {
     users::user { $user:
+      gid                  => $gid,
       group                => $group,
       alt_groups           => $alt_groups,
       home                 => $home,

@@ -4,6 +4,7 @@ class git::default {
   $ensure               = 'present'
 
   $user                 = 'git'
+  $gid                  = 785
   $group                = 'git'
   $alt_groups           = []
 

@@ -4,6 +4,7 @@
   "git_allowed_ssh_key_type" : "rsa",
   "git_password" : "",
   "git_user" : "git",
+  "git_gid" : "785",
   "git_group" : "git",
   "git_alt_groups" : [],
   "git_root_name" : "Root",

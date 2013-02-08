@@ -14,6 +14,7 @@ class git::params inherits git::default {
   $skel_gitconfig_template = module_param('skel_gitconfig_template')
 
   $user                    = module_param('user')
+  $gid                     = module_param('gid')
   $group                   = module_param('group')
   $alt_groups              = module_array('alt_groups', $users::params::user_alt_groups)
   $home                    = module_param('home')
